@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RTOS Security · Interactive Field Guide</title>
+<meta name="description" content="An interactive, hands-on field guide to Real-Time Operating System security — 25 modules, real C snippets, a live scheduler simulator, and threat models for avionics, automotive, and medical systems." />
+<link rel="stylesheet" href="assets/styles.css" />
+<!-- Webfonts are a progressive enhancement only. They load non-blocking, so
+     with no internet (offline training rooms) the page renders instantly using
+     the system-font fallbacks defined in styles.css. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" media="print" onload="this.media='all'"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;450;500;600&display=swap" />
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;450;500;600&display=swap" /></noscript>
+</head>
+<body>
+<a class="skip-link" href="#modules">Skip to modules</a>
+
+<header class="topbar" id="top">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="#top" aria-label="RTOS Security home">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="34" height="34">
+          <rect x="2" y="2" width="36" height="36" rx="7" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M6 26 h5 v-8 h5 v12 h5 v-16 h5 v10 h3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="brand-text">RTOS<span class="brand-slash">/</span>SEC</span>
+    </a>
+    <nav class="topnav" aria-label="Primary">
+      <a href="#modules">Modules</a>
+      <a href="#simulator">Scheduler Lab</a>
+      <a href="#threats">Threat Map</a>
+      <a href="#snippets">Code Bench</a>
+    </nav>
+    <div class="progress-pill" id="progressPill" title="Modules you've marked complete">
+      <span class="dot"></span><span id="progressText">0 / 25</span>
+    </div>
+  </div>
+</header>
+
+<section class="hero" aria-labelledby="heroTitle">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow"><span class="tick"></span>Field guide · 25 modules · avionics · automotive · medical</p>
+      <h1 id="heroTitle">Security for systems that<br><em>cannot miss a deadline.</em></h1>
+      <p class="lede">A real-time operating system fails two ways: it can be <strong>wrong</strong>, or it can be <strong>late</strong>. Securing one means defending confidentiality and integrity <em>without</em> ever stealing the microseconds a control loop is counting on. This guide walks the whole surface — kernel to key store — with code you can run and threats you can trace.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#modules">Start the 25 modules</a>
+        <a class="btn btn-ghost" href="#simulator">Try the scheduler lab</a>
+      </div>
+      <dl class="hero-stats">
+        <div><dt>Modules</dt><dd>25</dd></div>
+        <div><dt>Runnable snippets</dt><dd>12+</dd></div>
+        <div><dt>Threat scenarios</dt><dd>9</dd></div>
+      </dl>
+    </div>
+
+    <figure class="hero-scope" aria-label="Animated real-time scheduling timeline showing three tasks preempting by priority">
+      <figcaption class="scope-cap"><span class="led"></span>SCHEDULE · rate-monotonic · 3 tasks</figcaption>
+      <div class="scope" id="scope"></div>
+      <div class="scope-legend">
+        <span><i class="sw t1"></i>&#964;1 · 5ms · hi</span>
+        <span><i class="sw t2"></i>&#964;2 · 10ms · med</span>
+        <span><i class="sw t3"></i>&#964;3 · 20ms · lo</span>
+        <span class="miss-flag" id="missFlag" hidden><i></i>deadline miss</span>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<main>
+<section class="section" id="modules" aria-labelledby="modulesTitle">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="modulesTitle">The 25 modules</h2>
+      <p class="section-sub">Tap any card to open its briefing — a plain-language explanation, why it matters for real-time systems, and where the security holes actually are. Mark modules complete to track your run.</p>
+    </div>
+
+    <div class="controls">
+      <div class="search-field">
+        <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="9" cy="9" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M14 14 L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="search" id="moduleSearch" placeholder="Search modules — try &ldquo;boot&rdquo;, &ldquo;memory&rdquo;, &ldquo;keys&rdquo;&hellip;" aria-label="Search modules" />
+      </div>
+      <div class="filter-row" role="group" aria-label="Filter modules by track">
+        <button class="chip is-active" data-track="all">All</button>
+        <button class="chip" data-track="foundations">Foundations</button>
+        <button class="chip" data-track="kernel">Kernel &amp; memory</button>
+        <button class="chip" data-track="crypto">Crypto &amp; keys</button>
+        <button class="chip" data-track="ops">Ops &amp; assurance</button>
+      </div>
+    </div>
+
+    <ol class="module-grid" id="moduleGrid"></ol>
+    <p class="empty-state" id="emptyState" hidden>No module matches that search. Try a broader term like &ldquo;memory&rdquo; or clear the filter.</p>
+  </div>
+</section>
+
+<section class="section band" id="simulator" aria-labelledby="simTitle">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="simTitle">Scheduler lab — where timing becomes a security property</h2>
+      <p class="section-sub">In an RTOS, an attacker rarely needs to crash you. Making a high-priority task <em>miss its deadline</em> is enough — that is a denial-of-service against physics. Build a task set below and watch rate-monotonic scheduling hold or break. This is the same math a certification reviewer runs by hand.</p>
+    </div>
+
+    <div class="lab">
+      <div class="lab-controls">
+        <div class="task-editor" id="taskEditor"></div>
+        <button class="btn btn-small" id="addTask" type="button">+ Add task</button>
+
+        <div class="util-readout">
+          <div class="util-bar"><span id="utilFill"></span></div>
+          <p class="util-line">CPU utilisation <strong id="utilVal">&mdash;</strong> · RMS bound for <span id="taskCount">3</span> tasks: <strong id="rmBound">&mdash;</strong></p>
+          <p class="verdict" id="verdict"></p>
+        </div>
+      </div>
+
+      <div class="lab-viz">
+        <div class="lab-scope" id="labScope"></div>
+        <p class="lab-hint">Bars are CPU time. A red notch is a job that ran past its deadline. Push utilisation over the bound and watch the low-priority task starve — that is <em>priority inversion</em> waiting to happen.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="threats" aria-labelledby="threatTitle">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="threatTitle">Threat map · STRIDE across the RTOS stack</h2>
+      <p class="section-sub">Pick a layer of the stack to see what goes wrong there, the real-world incident it echoes, and the mitigation you'd put in front of a DO-178C or IEC 62443 reviewer.</p>
+    </div>
+    <div class="threat">
+      <ul class="stack" id="stackList" role="tablist" aria-label="RTOS stack layers"></ul>
+      <div class="threat-detail" id="threatDetail" role="tabpanel" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section class="section band" id="snippets" aria-labelledby="benchTitle">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="benchTitle">Code bench — the patterns worth memorising</h2>
+      <p class="section-sub">Vetted, minimal C for the mistakes that show up again and again in embedded security reviews. Each one pairs the <span class="tag-bad">flawed</span> version with the <span class="tag-good">hardened</span> fix. Copy either.</p>
+    </div>
+    <div class="bench" id="bench"></div>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div>
+      <p class="foot-brand">RTOS<span class="brand-slash">/</span>SEC</p>
+      <p class="foot-note">An interactive field guide to real-time operating system security. Content is educational — always validate against your platform's certification evidence before shipping.</p>
+    </div>
+    <div class="foot-cols">
+      <div>
+        <h3>Tracks</h3>
+        <a href="#modules">Foundations</a>
+        <a href="#modules">Kernel &amp; memory</a>
+        <a href="#modules">Crypto &amp; keys</a>
+        <a href="#modules">Ops &amp; assurance</a>
+      </div>
+      <div>
+        <h3>Labs</h3>
+        <a href="#simulator">Scheduler lab</a>
+        <a href="#threats">Threat map</a>
+        <a href="#snippets">Code bench</a>
+      </div>
+      <div>
+        <h3>Standards touched</h3>
+        <span>DO-178C · DAL A&ndash;E</span>
+        <span>ARINC 653</span>
+        <span>IEC 62443 / ISA-99</span>
+        <span>CNSA 2.0</span>
+      </div>
+    </div>
+  </div>
+  <div class="wrap foot-legal">
+    <span>Built as an open teaching resource. Adapt freely.</span>
+    <button class="btn btn-tiny" id="resetProgress" type="button">Reset my progress</button>
+  </div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
