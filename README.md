@@ -8,6 +8,8 @@ Built as an open educational resource for engineers in **avionics, automotive, a
 
 The module outline is adapted and substantially expanded from the WIZAPE "Real-Time Operating System Security" course outline (wizape.com), with original explanations, C code, and interactive exercises added.
 
+Access the interactive site ([https://myramade.github.io/RTOS-Security-Guide/#modules])
+
 ## What's inside
 
 | Section | What it does |
